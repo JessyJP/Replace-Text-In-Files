@@ -196,7 +196,7 @@ def process_inputfileOrDirectoryPath(path, CTL):
                     if not is_binary(file_path):
                         process_file(file_path, CTL)
 
-def main():
+def main(args):
     parser = argparse.ArgumentParser()
 
     # -v, --virtual: If set, changes are not committed to files after processing.
@@ -233,18 +233,21 @@ def main():
     parser.add_argument("--interactive-mode-ON", action="store_true", help="Activate special mode.")
 
     # Check if no arguments were provided
-    if len(sys.argv)==1:
+    if len(args)==0:
         parser.print_help(sys.stderr)
         from SummaryScreen import printSummaryScreen
         printSummaryScreen()
-        sys.exit(1)
+        return
 
-    args = parser.parse_args()
+    CTL = parser.parse_args(args)
 
     # validate the input arguments
-    validate_input(args)
+    validate_input(CTL)
 
     # loop over the input strings listed in the -i
-    for path in args.input_list:
-        process_inputfileOrDirectoryPath(path, args)
+    for path in CTL.input_list:
+        process_inputfileOrDirectoryPath(path, CTL)
 
+# This allows the module to be runnable from the command line
+if __name__ == "__main__":
+    main(sys.argv[1:])

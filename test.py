@@ -1,7 +1,4 @@
-import subprocess
-
-# Variables
-scriptName = './text_replacement_file_processor.py'
+import text_replacement_file_processor  # replace this with the actual name of your module
 
 # Define the command to be executed
 command = []
@@ -26,5 +23,4 @@ command.append(' -t Hello test -s Hi exam -i test_dir')
 
 # Execute the command
 for cmd in command:
-    cmd = ['python', scriptName] + cmd.split()
-    subprocess.run(cmd)
+       text_replacement_file_processor.main(cmd.split())

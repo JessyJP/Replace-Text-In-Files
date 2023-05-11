@@ -1,0 +1,81 @@
+Requirements for software:
+1. Command line tool that can process multiple files or directories and replace string or regular expression
+2. Can receive a single or multiple file or directory paths.
+3. It has number of command line input arguments:
+
+	Argument Boolean arguments: 
+	-v or --virtual is a boolean that means not to commit the changes to a file after file processing
+	-d or --detail  is for verbose output when the files are processed there will be some diagnostic output
+	
+	Arguments : search settings section for boolean arguments:
+	-n or --normal is TRUE by default this includes upper or lower case in any sequence of strings
+	-w for --match-whole_word_only is FALSE by default. If -m is enabled -n is disabled. This setting matches any string of characeters by only in the appropriate case
+	-c for --match-case is FALSE by default. If -c enabled -n is disabled	
+
+	Arguments : search-type section for arguments that require a subsequent string or strings:
+	-t or --text (search text string or list of strings)
+	-e or --extendedtext (search text string with extended characters)
+	-r or --regex  (serach regular expression)
+	This section of arguments is mutually exclusive.
+	 
+	
+	Arguments : 
+	-s or --substitute is the replacement string or list of strings containing file-paths
+	
+	Argument:
+	-i or --input-list is the list of input files or directories
+	
+	
+	Additional boolean Arguments with only long version available:
+	--recursive-OFF - means that the processing will not be recursive
+	--interactive-mode-ON - means that a special mode will be activated
+
+	
+	* There also has to be a -h or --help argument which is called by default if no arguments are supplied or the help argument is supplied
+
+Make the argument flags auto completable  when the long version is used with "--"
+	
+4. The main function has to process and parse the input arguments into a structure that will be passed to the other functions
+After parsing the call a function that will validate the input arguments
+The main function will loop over the input strings listed in the -i.
+The loop will call a function "process_fileOrDirectory_Path(path, CTL).
+CTL is control structure that is the parsed arguments from the command line input.
+
+5. "process_fileOrDirectory_Path(path, CTL). It has to traverse the pat and check if a file is binary or textual or directory. 
+If the path is a directory then recursively call "process_fileOrDirectory_Path(path, CTL)". 
+If "--recursive-OFF" is TRUE then you can ignore the recursion and continue.
+Binaries are ignored and if "-d" is supplied then the file that is binary will be listed and stated that it is ignored.
+If the path is textual file then call the "process_file" function which takes the control structure and the input file name.
+
+6. Make a suitable function to check if a file is binary file.
+
+7. The function validating the input arguments has to check if the number of strings in the search type section matches the strings in the -s section.
+Print the strings from both categories in pink and blue matching them one to one in a table.
+Above the table state the state of each input argument in green. The state should have a nice formatting.
+Bellow the table you can list the inputs strings if the "-d" option is true.
+This function should also do some extra checks: 
+If -r is enabled , the search type switches should be all disabled, i.e. -n -w -c should be set to FALSE
+
+8. Process file is the most important function.
+
+8.1	First the file has to be loaded and the text content stored in a variable.
+	There are some checks and error handling that has to be done with an appropriate print output.
+	Errors should be printed in red throughout the code.
+
+8.2 Each search string has to be looped over. 
+There is a difference how the text will be searched. 
+only one of the types in "Arguments : search-type section for arguments that require a subsequent string or strings" will be enabled so there has to be a 
+selection here and the search has to be performed according to the type and setting.
+Regular expressions are not affected by the search settings but the normal text and the --extendedtext option are affected.
+Once all the locations are noted.
+It would be good to make a little structure that contains the line this was found on and the position such as "Replace Lm:# Col:# Pos:# full line with the [search-string] in green and full ine with the replacement part in red[replacement-string] "
+For now you can store the printable output in a printbuffer.
+If there were any changes in the file you can then print the name of the file stating it was processed and then print the replacement printbuffer.
+For example "File substitutions [#number of file substitutions#] in : #filepath#"  
+
+If the -d option is TRUE print the detailed changes.
+print the replacement print buffer.
+
+If the -v option is TRUE then don't write the changes to the file. Only when -v is FALSE the the changes be committed.
+Infrom of any writing output errors.
+

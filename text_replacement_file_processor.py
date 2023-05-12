@@ -43,11 +43,24 @@ import os
 import re
 
 # Color codes
+RESET = "\033[0m"
+BLACK = "\033[30m"
 RED = "\033[31m"
 GREEN = "\033[32m"
+YELLOW = "\033[33m"
 BLUE = "\033[34m"
-PINK = "\033[35m"
-RESET = "\033[0m"
+MAGENTA = "\033[35m"
+CYAN = "\033[36m"
+WHITE = "\033[37m"
+BRIGHT_BLACK = "\033[90m"
+BRIGHT_RED = "\033[91m"
+BRIGHT_GREEN = "\033[92m"
+BRIGHT_YELLOW = "\033[93m"
+BRIGHT_BLUE = "\033[94m"
+BRIGHT_MAGENTA = "\033[95m"
+BRIGHT_CYAN = "\033[96m"
+BRIGHT_WHITE = "\033[97m"
+
 
 def is_binary(file_path):
     """
@@ -88,22 +101,22 @@ def validate_input(args):
         sys.exit(1)
 
     # Print the state of each input argument in green
-    print(f"{GREEN}Input Arguments:{RESET}")
-    print(f"{GREEN}Virtual: {args.virtual}{RESET}")
-    print(f"{GREEN}Detail: {args.detail}{RESET}")
-    print(f"{GREEN}Normal: {args.normal}{RESET}")
-    print(f"{GREEN}Match whole word only: {args.match_whole_word_only}{RESET}")
-    print(f"{GREEN}Match case: {args.match_case}{RESET}")
-    print(f"{GREEN}Search strings: {search_types}{RESET}")
-    print(f"{GREEN}Substitution strings: {args.substitute}{RESET}")
-    print(f"{GREEN}Input files/directories: {args.input_list}{RESET}")
-    print(f"{GREEN}Recursive OFF: {args.recursive_OFF}{RESET}")
-    print(f"{GREEN}Interactive mode ON: {args.interactive_mode_ON}{RESET}")
+    print(f"{CYAN}Input Arguments:{RESET}")
+    print(f"{CYAN}Virtual: {GREEN}{args.virtual}{RESET}")
+    print(f"{CYAN}Detail: {GREEN}{args.detail}{RESET}")
+    print(f"{CYAN}Normal: {GREEN}{args.normal}{RESET}")
+    print(f"{CYAN}Match whole word only: {GREEN}{args.match_whole_word_only}{RESET}")
+    print(f"{CYAN}Match case: {GREEN}{args.match_case}{RESET}")
+    print(f"{CYAN}Search strings: {GREEN}{search_types}{RESET}")
+    print(f"{CYAN}Substitution strings: {GREEN}{args.substitute}{RESET}")
+    print(f"{CYAN}Input files/directories: {GREEN}{args.input_list}{RESET}")
+    print(f"{CYAN}Recursive OFF: {GREEN}{args.recursive_OFF}{RESET}")
+    print(f"{CYAN}Interactive mode ON: {GREEN}{args.interactive_mode_ON}{RESET}")
 
     # Print the search and substitution strings in a table
-    print(f"\n{BLUE}Search Strings{RESET}\t{PINK}Substitution Strings{RESET}")
+    print(f"\n{BLUE}Search Strings{RESET}\t{MAGENTA}Substitution Strings{RESET}")
     for search_str, subst_str in zip(search_types, args.substitute):
-        print(f"{BLUE}{search_str}{RESET}\t{PINK}{subst_str}{RESET}")
+        print(f"{BLUE}{search_str}{RESET}\t{MAGENTA}{subst_str}{RESET}")
 
     # If the -d option is true, list the input strings
     if args.detail:
@@ -237,7 +250,7 @@ def main(args):
         parser.print_help(sys.stderr)
         from SummaryScreen import printSummaryScreen
         printSummaryScreen()
-        return
+        sys.exit(1)
 
     CTL = parser.parse_args(args)
 

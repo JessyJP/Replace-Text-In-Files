@@ -41,6 +41,7 @@ import argparse
 import sys
 import os
 import re
+from tabulate import tabulate
 
 # Color codes
 RESET = "\033[0m"
@@ -75,9 +76,14 @@ def is_binary(file_path):
             chunk = file.read(CHUNKSIZE)
             if b'\0' in chunk:  # Check for null bytes
                 return True
+            #end
             if len(chunk) < CHUNKSIZE:
                 break  # End of file
+            #end
+        #end
+    #end
     return False
+#end
 
 def validate_input(args):
     """
@@ -94,11 +100,13 @@ def validate_input(args):
     elif len(search_types) != len(args.substitute):
         print(f"{RED}Error: The number of search strings does not match the number of substitution strings.{RESET}")
         sys.exit(1)
+    #end
 
     # Extra checks
     if args.regex and (args.normal or args.match_whole_word_only or args.match_case):
         print(f"{RED}Error: The -r option cannot be used with -n, -w, or -c.{RESET}")
         sys.exit(1)
+    #end
 
     # Print the state of each input argument in green
     print(f"{CYAN}Input Arguments:{RESET}")
@@ -109,21 +117,32 @@ def validate_input(args):
     print(f"{CYAN}Match case: {GREEN}{args.match_case}{RESET}")
     print(f"{CYAN}Search strings: {GREEN}{search_types}{RESET}")
     print(f"{CYAN}Substitution strings: {GREEN}{args.substitute}{RESET}")
-    print(f"{CYAN}Input files/directories: {GREEN}{args.input_list}{RESET}")
-    print(f"{CYAN}Recursive OFF: {GREEN}{args.recursive_OFF}{RESET}")
-    print(f"{CYAN}Interactive mode ON: {GREEN}{args.interactive_mode_ON}{RESET}")
+    # print(f"{CYAN}Input files/directories: {GREEN}{args.input_list}{RESET}")
+    # print(f"{CYAN}Recursive OFF: {GREEN}{args.recursive_OFF}{RESET}")
+    # print(f"{CYAN}Interactive mode ON: {GREEN}{args.interactive_mode_ON}{RESET}")
 
-    # Print the search and substitution strings in a table
-    print(f"\n{BLUE}Search Strings{RESET}\t{MAGENTA}Substitution Strings{RESET}")
-    for search_str, subst_str in zip(search_types, args.substitute):
-        print(f"{BLUE}{search_str}{RESET}\t{MAGENTA}{subst_str}{RESET}")
+    # Print the search and substitution strings in a table like formatting
+    # print(f"\n{BLUE}{'Search Strings':<20}{RESET}{MAGENTA}{'Substitution Strings':<20}{RESET}")
+    # for search_str, subst_str in zip(search_types, args.substitute):
+    #     print(f"{BLUE}{search_str:<20}{RESET}{MAGENTA}{subst_str:<20}{RESET}")
+
+    # Prepare the data with no colours
+    # data = [["Search Strings", "Substitution Strings"]] + list(zip(search_types, args.substitute))
+
+    # Prepare the data
+    header = [[f"{BLUE}Search Strings{RESET}", f"{MAGENTA}Substitution Strings{RESET}"]]
+    data = [[f"{BLUE}{search_str}{RESET}", f"{MAGENTA}{subst_str}{RESET}"] for search_str, subst_str in zip(search_types, args.substitute)]
+    data = header + data
+
+    # Print the data as a table
+    print(tabulate(data, headers='firstrow', tablefmt='fancy_grid'))
+#end
 
     # If the -d option is true, list the input strings
-    if args.detail:
-        print(f"\n{GREEN}Input files/directories:{RESET}")
-        for path in args.input_list:
-            print(path)
-
+    # if args.detail:
+    #     print(f"\n{GREEN}Input files/directories:{RESET}")
+    #     for path in args.input_list:
+    #         print(path)
 
 def process_file(path, CTL):
     """
@@ -136,9 +155,11 @@ def process_file(path, CTL):
     try:
         with open(path, 'r') as file:
             content = file.readlines()
+        #end
     except Exception as e:
         print(f"{RED}Error: Failed to read the file {path}. {e}{RESET}")  # Print in red
         return
+    #end
 
     # Prepare the search and replacement strings
     search_types = CTL.text or CTL.extendedtext or CTL.regex
@@ -148,8 +169,10 @@ def process_file(path, CTL):
     flags = 0
     if CTL.normal:
         flags |= re.IGNORECASE
+    #end
     if CTL.match_whole_word_only:
         flags |= re.WORD
+    #end
 
     # Initialize the replacement print buffer
     print_buffer = []
@@ -163,21 +186,30 @@ def process_file(path, CTL):
                     f"Replace Lm:{i+1} Col:{line.find(search_str)+1} Pos:{line.find(search_str)+len(search_str)} "
                     f"full line with the [{search_str}] in green and full line with the replacement part in red[{subst_str}]"
                 )
+            #end
             content[i] = new_line
+        #end
+    #end
 
     # Print the detailed changes
     if CTL.detail:
         print(f"File substitutions [{len(print_buffer)}] in : {path}")
         for line in print_buffer:
             print(line)
+        #end
+    #end
 
     # Write the changes to the file
     if not CTL.virtual:
         try:
             with open(path, 'w') as file:
                 file.writelines(content)
+            #end
         except Exception as e:
             print(f"{RED}Error: Failed to write to the file {path}. {e}{RESET}")  # Print in red
+        #end
+    #end
+#end
 
 def process_inputfileOrDirectoryPath(path, CTL):
     """
@@ -190,6 +222,7 @@ def process_inputfileOrDirectoryPath(path, CTL):
     if not os.path.exists(path):
         print(f"{RED}Error: The path {path} does not exist.{RESET}")  # Print in red
         sys.exit(1)
+    #end
 
     # Check if path is a file or a directory
     if os.path.isfile(path):
@@ -197,9 +230,11 @@ def process_inputfileOrDirectoryPath(path, CTL):
         if is_binary(path):
             if CTL.detail:
                 print(f"The file {path} is binary and will be ignored.")
+            #end
             return
         else:
             process_file(path, CTL)
+        #end
     elif os.path.isdir(path):
         # If recursive-OFF is not set, process directory recursively
         if not CTL.recursive_OFF:
@@ -208,6 +243,12 @@ def process_inputfileOrDirectoryPath(path, CTL):
                     file_path = os.path.join(root, file)
                     if not is_binary(file_path):
                         process_file(file_path, CTL)
+                    #end
+                #end
+            #end
+        #end
+    #end
+#end
 
 def main(args):
     parser = argparse.ArgumentParser()
@@ -251,6 +292,7 @@ def main(args):
         from SummaryScreen import printSummaryScreen
         printSummaryScreen()
         sys.exit(1)
+    #end
 
     CTL = parser.parse_args(args)
 
@@ -260,7 +302,10 @@ def main(args):
     # loop over the input strings listed in the -i
     for path in CTL.input_list:
         process_inputfileOrDirectoryPath(path, CTL)
+    #end
+#end
 
 # This allows the module to be runnable from the command line
 if __name__ == "__main__":
     main(sys.argv[1:])
+#end

@@ -10,19 +10,20 @@ command = []
 # command.append('-h')
 
 # Replace the word 'Hello' with 'Hi' in all files
-command.append('-v -t Hello -s Hi -i test_dir')
+command.append('-v -d -t Hello -s Hi -i test_dir')
 
-# Replace the word 'Hello' with 'Hi' in all files, but don't write the changes to the files
-command.append('-v -t Hello -s Hi -i test_dir')
 
 # Replace the word 'Hello' with 'Hi' in all files, print detailed output
 command.append('-v -d -t Hello -s Hi -i test_dir')
 
 # Replace the word 'Hello' with 'Hi' in file5.txt only
-command.append('-v -t Hello -s Hi -i test_dir/file5.txt')
+command.append('-v -d -t Hello -s Hi -i test_dir/file5.txt')
 
 # Replace multiple words in all files
-command.append('-v t Hello test -s Hi exam -i test_dir')
+command.append('-v -d -t Hello test -s Hi exam -i test_dir')
+
+command.append('-v -d -e  "last" another first -s "" -i test_dir')
+command.append('-v -d -n  "last" another first -s "x" -i test_dir')
 
 subprocess.run("cls",shell=True)
 # Execute the command

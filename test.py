@@ -26,9 +26,10 @@ command.append('-v t Hello test -s Hi exam -i test_dir')
 
 subprocess.run("cls",shell=True)
 # Execute the command
-n = 0
+i = 0
 for cmd in command:
-       n+=1
-       print(f"SCRIPT CALL:{n}\n"+100*"=")
+       i+=1
+       print("\n"+100*"="+f"\nSCRIPT CALL:{i}\n"+100*"=")
        arguments = cmd.split()
        text_replacement_file_processor.main(arguments)
+#end

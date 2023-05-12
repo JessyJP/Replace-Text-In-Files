@@ -94,6 +94,10 @@ def validate_input(args):
     # Prepare the search strings
     search_types = args.text or args.extendedtext or args.regex
 
+    # If extendedtext mode is enabled, strip the quotes
+    if args.extendedtext:
+        search_types = [s.strip('"') for s in search_types]
+
     # Prepare the replacement strings
     if len(args.substitute) == 1 and len(search_types) > 1:
         args.substitute = args.substitute * len(search_types)
@@ -102,47 +106,54 @@ def validate_input(args):
         sys.exit(1)
     #end
 
+    # If extendedtext mode is enabled, strip the quotes from the substitute strings
+    if args.extendedtext:
+        args.substitute = [s.strip('"') for s in args.substitute]
+
+
     # Extra checks
     if args.regex and (args.normal or args.match_whole_word_only or args.match_case):
         print(f"{RED}Error: The -r option cannot be used with -n, -w, or -c.{RESET}")
         sys.exit(1)
     #end
 
-    # Print the state of each input argument in green
-    print(f"{CYAN}Input Arguments:{RESET}")
-    print(f"{CYAN}Virtual: {GREEN}{args.virtual}{RESET}")
-    print(f"{CYAN}Detail: {GREEN}{args.detail}{RESET}")
-    print(f"{CYAN}Normal: {GREEN}{args.normal}{RESET}")
-    print(f"{CYAN}Match whole word only: {GREEN}{args.match_whole_word_only}{RESET}")
-    print(f"{CYAN}Match case: {GREEN}{args.match_case}{RESET}")
-    print(f"{CYAN}Search strings: {GREEN}{search_types}{RESET}")
-    print(f"{CYAN}Substitution strings: {GREEN}{args.substitute}{RESET}")
-    # print(f"{CYAN}Input files/directories: {GREEN}{args.input_list}{RESET}")
-    # print(f"{CYAN}Recursive OFF: {GREEN}{args.recursive_OFF}{RESET}")
-    # print(f"{CYAN}Interactive mode ON: {GREEN}{args.interactive_mode_ON}{RESET}")
+    # If the -d option is true, list the input arguments
+    if args.detail:
 
-    # Print the search and substitution strings in a table like formatting
-    # print(f"\n{BLUE}{'Search Strings':<20}{RESET}{MAGENTA}{'Substitution Strings':<20}{RESET}")
-    # for search_str, subst_str in zip(search_types, args.substitute):
-    #     print(f"{BLUE}{search_str:<20}{RESET}{MAGENTA}{subst_str:<20}{RESET}")
+        # Print the state of each input argument in green
+        print(f"{CYAN}Input Arguments:{RESET}")
+        print(f"{CYAN}Virtual: {GREEN}{args.virtual}{RESET}")
+        print(f"{CYAN}Detail: {GREEN}{args.detail}{RESET}")
+        print(f"{CYAN}Normal: {GREEN}{args.normal}{RESET}")
+        print(f"{CYAN}Match whole word only: {GREEN}{args.match_whole_word_only}{RESET}")
+        print(f"{CYAN}Match case: {GREEN}{args.match_case}{RESET}")
+        print(f"{CYAN}Search strings: {GREEN}{search_types}{RESET}")
+        print(f"{CYAN}Substitution strings: {GREEN}{args.substitute}{RESET}")
+        # print(f"{CYAN}Input files/directories: {GREEN}{args.input_list}{RESET}")
+        # print(f"{CYAN}Recursive OFF: {GREEN}{args.recursive_OFF}{RESET}")
+        # print(f"{CYAN}Interactive mode ON: {GREEN}{args.interactive_mode_ON}{RESET}")
 
-    # Prepare the data with no colours
-    # data = [["Search Strings", "Substitution Strings"]] + list(zip(search_types, args.substitute))
+        # Print the search and substitution strings in a table like formatting
+        # print(f"\n{BLUE}{'Search Strings':<20}{RESET}{MAGENTA}{'Substitution Strings':<20}{RESET}")
+        # for search_str, subst_str in zip(search_types, args.substitute):
+        #     print(f"{BLUE}{search_str:<20}{RESET}{MAGENTA}{subst_str:<20}{RESET}")
 
-    # Prepare the data
-    header = [[f"{BLUE}Search Strings{RESET}", f"{MAGENTA}Substitution Strings{RESET}"]]
-    data = [[f"{BLUE}{search_str}{RESET}", f"{MAGENTA}{subst_str}{RESET}"] for search_str, subst_str in zip(search_types, args.substitute)]
-    data = header + data
+        # Prepare the data with no colours
+        # data = [["Search Strings", "Substitution Strings"]] + list(zip(search_types, args.substitute))
 
-    # Print the data as a table
-    print(tabulate(data, headers='firstrow', tablefmt='fancy_grid'))
+        # Prepare the data
+        header = [[f"{BLUE}Search Strings{RESET}", f"{MAGENTA}Substitution Strings{RESET}"]]
+        data = [[f"{BLUE}{search_str}{RESET}", f"{MAGENTA}{subst_str}{RESET}"] for search_str, subst_str in zip(search_types, args.substitute)]
+        data = header + data
+
+        # Print the data as a table
+        print(tabulate(data, headers='firstrow', tablefmt='fancy_grid'))
+
+        #     print(f"\n{GREEN}Input files/directories:{RESET}")
+        #     for path in args.input_list:
+        #         print(path)
+    #end
 #end
-
-    # If the -d option is true, list the input strings
-    # if args.detail:
-    #     print(f"\n{GREEN}Input files/directories:{RESET}")
-    #     for path in args.input_list:
-    #         print(path)
 
 def process_file(path, CTL):
     """
@@ -183,8 +194,8 @@ def process_file(path, CTL):
             new_line, n = re.subn(search_str, subst_str, line, flags=flags)
             if n > 0:
                 print_buffer.append(
-                    f"Replace Lm:{i+1} Col:{line.find(search_str)+1} Pos:{line.find(search_str)+len(search_str)} "
-                    f"full line with the [{search_str}] in green and full line with the replacement part in red[{subst_str}]"
+                    f" |- [Replace Lm:{i+1} Col:{line.find(search_str)+1} Pos:{line.find(search_str)+len(search_str)}] "
+                    f"{line}  [{YELLOW}{search_str}{RESET}] ==> [{RED}{subst_str}{RESET}{WHITE}]  {new_line}"
                 )
             #end
             content[i] = new_line
@@ -193,7 +204,7 @@ def process_file(path, CTL):
 
     # Print the detailed changes
     if CTL.detail:
-        print(f"File substitutions [{len(print_buffer)}] in : {path}")
+        print(f"{GREEN} + File substitutions [{RED}{len(print_buffer)}{GREEN}] in :{WHITE} {path}{RESET}")
         for line in print_buffer:
             print(line)
         #end
@@ -229,7 +240,7 @@ def process_inputfileOrDirectoryPath(path, CTL):
         # Check if file is binary
         if is_binary(path):
             if CTL.detail:
-                print(f"The file {path} is binary and will be ignored.")
+                print(f"{YELLOW}The file {path} is binary and will be ignored.")
             #end
             return
         else:
@@ -253,6 +264,11 @@ def process_inputfileOrDirectoryPath(path, CTL):
 def main(args):
     parser = argparse.ArgumentParser()
 
+    # --interactive-mode-ON: If set, a special mode will be activated.
+    parser.add_argument("--interactive-mode-ON", action="store_true", help="Activate special mode.")
+    # --recursive-OFF: If set, processing will not be recursive.
+    parser.add_argument("--recursive-OFF", action="store_true", help="Disable recursive processing.")
+    
     # -v, --virtual: If set, changes are not committed to files after processing.
     parser.add_argument("-v", "--virtual", action="store_true", help="Do not commit changes to files after processing.")
     # -d, --detail: If set, verbose output is produced as files are processed.
@@ -281,10 +297,6 @@ def main(args):
     # -i, --input-list: Accepts a list of input files or directories.
     parser.add_argument("-i", "--input-list", nargs='+', help="List of input files or directories.")
 
-    # --recursive-OFF: If set, processing will not be recursive.
-    parser.add_argument("--recursive-OFF", action="store_true", help="Disable recursive processing.")
-    # --interactive-mode-ON: If set, a special mode will be activated.
-    parser.add_argument("--interactive-mode-ON", action="store_true", help="Activate special mode.")
 
     # Check if no arguments were provided
     if len(args)==0:
